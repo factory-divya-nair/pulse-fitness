@@ -1,0 +1,56 @@
+project: Pulse Fitness
+platform: github
+imagemagick: true
+video_evidence: true # record interactive flows through droid-control
+droid_control:
+  plugin: droid-control@factory-plugins
+  compose: true # single runtime toggle for optional edited MP4 output
+
+environments:
+  local:
+    url: http://127.0.0.1:5173
+    start_command: 'npm run dev -- --host 127.0.0.1 --port 5173 --strictPort'
+    restrictions: []
+    notes: >
+      The only QA target. There are no deployed or preview environments, so QA
+      always starts the Vite dev server from the checked-out PR branch. Never
+      test a remote URL.
+
+default_target: local
+
+auth:
+  method: none
+  provider: none
+
+personas:
+  - name: visitor
+    description: 'Anonymous website visitor browsing plans, classes, and clubs. The site has no login.'
+    credentials_source: none
+    test_focus: ['navigation', 'membership plans and prices', 'class schedule', 'club locations', 'not found page', 'responsive layout']
+    cannot_do: []
+
+apps:
+  web:
+    path_patterns:
+      - 'src/**'
+      - 'index.html'
+      - 'public/**'
+      - 'vite.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+    skill: qa-web
+    test_tool: agent-browser
+    build_command: 'npm ci'
+
+feature_flags:
+  provider: none
+
+integrations: {}
+
+cleanup:
+  auto_cleanup: false
+  strategy: none
+  instructions: 'Static site with no backend. Every test is read-only; nothing to clean up.'
+
+failure_learning: suggest_in_report

@@ -1,0 +1,35 @@
+# install-qa progress (resume file)
+platform: github
+categories:
+  default_target:
+    answered: true
+    value: local-dev-server
+    notes: "No deployed environments or preview deployments detected; QA starts `npm run dev` on the PR branch (http://localhost:5173)."
+  personas:
+    answered: true
+    value: [visitor]
+    notes: "No authentication in the app; anonymous visitor only."
+  critical_flows:
+    answered: true
+    value: [home-hero-ctas, header-navigation, memberships-plans, classes-schedule, locations-list, footer-links, not-found]
+  external_services:
+    answered: true
+    value: none
+  cleanup:
+    answered: true
+    value: none
+    notes: "Static site with no backend; tests are read-only."
+  imagemagick:
+    answered: true
+    value: true
+    notes: "Not installed locally; installed in CI by qa.yml."
+  ci_integration:
+    answered: true
+    workflow: true
+    required: true
+    preview_wait: not_applicable
+    video_evidence: true
+    droid_control_compose: true
+  failure_learning:
+    answered: true
+    value: suggest_in_report
