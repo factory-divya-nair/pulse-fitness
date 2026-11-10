@@ -1,4 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
+import ThemeToggle from './ThemeToggle.tsx'
 
 const links = [
   { to: '/memberships', label: 'Memberships' },
@@ -24,9 +25,12 @@ export default function Header() {
             ))}
           </ul>
         </nav>
-        <Link to="/memberships" className="btn btn--primary btn--sm">
-          Join Now
-        </Link>
+        <div className="header__actions">
+          <ThemeToggle />
+          <Link to="/memberships" className="btn btn--primary btn--sm">
+            Join Now
+          </Link>
+        </div>
       </div>
     </header>
   )
