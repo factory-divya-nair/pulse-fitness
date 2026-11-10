@@ -17,7 +17,7 @@ export default function Footer() {
         </ul>
       </div>
       <p className="container footer__note">
-        Fictional gym for the ticket-to-PR demo. Clubs, prices, and reviews are made up.
+        Fictional gym for demo purposes. Clubs, prices, and reviews are made up.
       </p>
     </footer>
   )

@@ -1,6 +1,6 @@
-# Ticket to PR Demo
+# Pulse Fitness
 
-A small website for a fictional gym, **Pulse Fitness**, used to demo Factory's ticket-to-PR automation. Clubs, prices, and reviews are made up.
+A small website for a fictional gym, used to demo Factory's ticket-to-PR automation. Clubs, prices, and reviews are made up.
 
 ## Pages
 

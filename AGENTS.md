@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Ticket-to-PR demo app: a website for a fictional gym, Pulse Fitness. Built with Vite, React 19, TypeScript, and React Router.
+Pulse Fitness: a website for a fictional gym, used for Factory demos. Built with Vite, React 19, TypeScript, and React Router.
 
 ## Commands
 
