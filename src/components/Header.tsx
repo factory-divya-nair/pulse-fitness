@@ -10,8 +10,8 @@ export default function Header() {
   return (
     <header className="header">
       <div className="container header__inner">
-        <Link to="/" className="logo" aria-label="VASA Fitness home">
-          VASA<span>FITNESS</span>
+        <Link to="/" className="logo" aria-label="Pulse Fitness home">
+          PULSE<span>FITNESS</span>
         </Link>
         <nav aria-label="Main">
           <ul className="nav">

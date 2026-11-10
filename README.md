@@ -1,12 +1,12 @@
-# VASA Fitness Demo
+# Ticket to PR Demo
 
-A small gym website inspired by [vasafitness.com](https://vasafitness.com/), built for Factory ticket-to-PR automation demos. Not affiliated with VASA Fitness.
+A small website for a fictional gym, **Pulse Fitness**, used to demo Factory's ticket-to-PR automation. Clubs, prices, and reviews are made up.
 
 ## Pages
 
-- **Home**: hero, amenities, studio classes, featured clubs, member reviews
+- **Home**: hero, amenities, class types, featured clubs, member reviews
 - **Memberships**: Basic, Plus, and Studio plans
-- **Classes**: weekly studio class schedule
+- **Classes**: weekly class schedule
 - **Locations**: club list with amenities
 
 ## Getting started

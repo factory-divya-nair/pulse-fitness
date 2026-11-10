@@ -6,7 +6,7 @@ export default function Classes() {
       <h1 id="classes-heading">
         Weekly class <em>schedule</em>
       </h1>
-      <p className="lead muted">Studio classes are included with the Studio membership.</p>
+      <p className="lead muted">Unlimited classes are included with the Studio membership.</p>
       <div className="table-wrap">
         <table className="schedule">
           <thead>
@@ -14,7 +14,7 @@ export default function Classes() {
               <th scope="col">Day</th>
               <th scope="col">Time</th>
               <th scope="col">Class</th>
-              <th scope="col">Studio</th>
+              <th scope="col">Type</th>
               <th scope="col">Length</th>
               <th scope="col">Coach</th>
             </tr>

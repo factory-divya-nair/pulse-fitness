@@ -44,9 +44,9 @@ export const plans: Plan[] = [
     tagline: 'Coach-led studio classes, no workout planning required.',
     features: [
       'Everything in Plus',
-      'Unlimited STUDIO RED HIIT',
-      'Unlimited STUDIO LFT strength',
-      'Unlimited STUDIO FLOW infrared yoga',
+      'Unlimited HIIT classes',
+      'Unlimited strength classes',
+      'Unlimited yoga and Pilates',
       'Cold plunge and red light therapy',
     ],
   },

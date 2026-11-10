@@ -5,7 +5,7 @@ export default function Memberships() {
   return (
     <section className="section container" aria-labelledby="memberships-heading">
       <h1 id="memberships-heading">
-        Membership options <em>priced for real life</em>
+        Memberships that <em>fit your life</em>
       </h1>
       <p className="lead muted">No long-term contracts. Cancel anytime with 30 days notice.</p>
       <div className="plan-grid">

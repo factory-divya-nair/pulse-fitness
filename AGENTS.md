@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Demo gym website (VASA Fitness style) built with Vite, React 19, TypeScript, and React Router.
+Ticket-to-PR demo app: a website for a fictional gym, Pulse Fitness. Built with Vite, React 19, TypeScript, and React Router.
 
 ## Commands
 
@@ -26,4 +26,3 @@ Run lint, test, and build before opening a PR. CI runs the same three checks.
 - Import local files with the `.tsx`/`.ts` extension.
 - Query elements by accessible role and name in tests.
 - Add tests for every new feature.
-- Branches: `droid/<ticket-id>-<slug>`. PR bodies reference the ticket key.

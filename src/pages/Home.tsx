@@ -4,9 +4,9 @@ import { studios } from '../data/classes.ts'
 import { locations } from '../data/locations.ts'
 
 const testimonials = [
-  { quote: 'The staff have been respectful and encouraging. Members cheer each other on, especially in Studio Red.', author: 'D.C.' },
+  { quote: 'The staff have been respectful and encouraging. Members cheer each other on, especially in the HIIT classes.', author: 'D.C.' },
   { quote: 'Very spacious, a huge variety of equipment, and friendly staff. A great value for the price.', author: 'Nikolas J.' },
-  { quote: 'I have been coming for years and absolutely love it. The LFT coaches changed how I train.', author: 'Maria P.' },
+  { quote: 'I have been coming for years and absolutely love it. The strength coaches changed how I train.', author: 'Maria P.' },
 ]
 
 export default function Home() {
@@ -15,9 +15,9 @@ export default function Home() {
       <section className="hero">
         <div className="container hero__inner">
           <h1>
-            Built to be <em>strong.</em>
+            Stronger <em>every day.</em>
           </h1>
-          <p className="hero__sub">Studio-style classes, recovery amenities, and strength equipment. Membership options priced for real life.</p>
+          <p className="hero__sub">Coach-led classes, recovery amenities, and plenty of room to lift. Memberships that fit your budget.</p>
           <div className="hero__ctas">
             <Link to="/memberships" className="btn btn--primary">Join Now</Link>
             <Link to="/locations" className="btn btn--ghost">Start your free 1-day trial</Link>
@@ -42,7 +42,7 @@ export default function Home() {
       <section className="section section--dark" aria-labelledby="studios-heading">
         <div className="container">
           <h2 id="studios-heading">
-            Studio classes, <em>coach-led</em>
+            Classes for <em>every goal</em>
           </h2>
           <div className="card-grid">
             {studios.map((studio) => (

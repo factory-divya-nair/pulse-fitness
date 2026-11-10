@@ -8,16 +8,16 @@ export type Location = {
   amenities: string[]
 }
 
+// Fictional clubs and addresses for demo purposes.
 export const locations: Location[] = [
-  { id: 'omaha-north', name: 'Omaha (North)', address: '7402 N 30th Street', city: 'Omaha', state: 'NE', zip: '68112', amenities: ['Pool', 'Studio RED', 'Kidcare'] },
-  { id: 'livonia-plymouth-rd', name: 'Livonia (Plymouth Rd)', address: '30070 Plymouth Road', city: 'Livonia', state: 'MI', zip: '48150', amenities: ['Studio LFT', 'Sauna', 'Basketball'] },
-  { id: 'oak-forest', name: 'Oak Forest', address: '5556 159th St', city: 'Oak Forest', state: 'IL', zip: '60452', amenities: ['Studio FLOW', 'Hot Tub', 'Kidcare'] },
-  { id: 'waukegan', name: 'Waukegan', address: '2650 Belvidere Rd', city: 'Waukegan', state: 'IL', zip: '60085', amenities: ['Pool', 'Cold Plunge', 'Studio RED'] },
-  { id: 'colorado-springs-jet-wing', name: 'Colorado Springs (Jet Wing)', address: '3175 Jet Wing Dr', city: 'Colorado Springs', state: 'CO', zip: '80916', amenities: ['Studio Pilates', 'Studio LFT', 'Sauna'] },
-  { id: 'waterloo', name: 'Waterloo', address: '4000 University Ave', city: 'Waterloo', state: 'IA', zip: '50701', amenities: ['Basketball', 'Hot Tub'] },
-  { id: 'south-bend-ireland-rd', name: 'South Bend (Ireland Rd)', address: '1911 East Ireland Road', city: 'South Bend', state: 'IN', zip: '46614', amenities: ['Pool', 'Studio FLOW', 'Kidcare'] },
-  { id: 'ypsilanti', name: 'Ypsilanti', address: '3737 Carpenter Road', city: 'Ypsilanti', state: 'MI', zip: '48197', amenities: ['Studio RED', 'Red Light Therapy'] },
-  { id: 'dayton-miamisburg', name: 'Dayton (Miamisburg)', address: '2070 Miamisburg-Centerville Road', city: 'Dayton', state: 'OH', zip: '45459', amenities: ['Pool', 'Sauna', 'Studio LFT'] },
-  { id: 'draper-12300', name: 'Draper (12300 South)', address: '268 East 12300 South', city: 'Draper', state: 'UT', zip: '84020', amenities: ['Studio Pilates', 'Cold Plunge', 'Basketball'] },
-  { id: 'tulsa-sheridan-rd', name: 'Tulsa (Sheridan Rd)', address: '10125 S Sheridan Road', city: 'Tulsa', state: 'OK', zip: '74133', amenities: ['Studio RED', 'Hot Tub', 'Kidcare'] },
+  { id: 'denver-highlands', name: 'Denver Highlands', address: '1200 Maple Avenue', city: 'Denver', state: 'CO', zip: '80211', amenities: ['Pool', 'HIIT Studio', 'Kidcare'] },
+  { id: 'austin-south', name: 'Austin South', address: '450 Riverbend Drive', city: 'Austin', state: 'TX', zip: '78745', amenities: ['Strength Studio', 'Sauna', 'Basketball'] },
+  { id: 'chicago-west-loop', name: 'Chicago West Loop', address: '88 Harbor Street', city: 'Chicago', state: 'IL', zip: '60607', amenities: ['Yoga Studio', 'Hot Tub', 'Kidcare'] },
+  { id: 'portland-pearl', name: 'Portland Pearl', address: '310 Cedar Lane', city: 'Portland', state: 'OR', zip: '97209', amenities: ['Pool', 'Cold Plunge', 'HIIT Studio'] },
+  { id: 'minneapolis-north', name: 'Minneapolis North', address: '2750 Lakeview Road', city: 'Minneapolis', state: 'MN', zip: '55411', amenities: ['Pilates Studio', 'Strength Studio', 'Sauna'] },
+  { id: 'phoenix-camelback', name: 'Phoenix Camelback', address: '901 Desert Bloom Way', city: 'Phoenix', state: 'AZ', zip: '85016', amenities: ['Basketball', 'Hot Tub'] },
+  { id: 'nashville-midtown', name: 'Nashville Midtown', address: '615 Music Row', city: 'Nashville', state: 'TN', zip: '37203', amenities: ['Pool', 'Yoga Studio', 'Kidcare'] },
+  { id: 'columbus-short-north', name: 'Columbus Short North', address: '1420 Oak Street', city: 'Columbus', state: 'OH', zip: '43201', amenities: ['HIIT Studio', 'Red Light Therapy'] },
+  { id: 'denver-tech-center', name: 'Denver Tech Center', address: '5300 Summit Parkway', city: 'Denver', state: 'CO', zip: '80237', amenities: ['Pool', 'Sauna', 'Strength Studio'] },
+  { id: 'salt-lake-sugar-house', name: 'Salt Lake Sugar House', address: '2100 Granite Boulevard', city: 'Salt Lake City', state: 'UT', zip: '84106', amenities: ['Pilates Studio', 'Cold Plunge', 'Basketball'] },
 ]

@@ -17,7 +17,7 @@ function renderAt(path: string) {
 describe('App', () => {
   it('renders the home hero and calls to action', () => {
     renderAt('/')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/built to be strong/i)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/stronger every day/i)
     expect(screen.getAllByRole('link', { name: /join now/i }).length).toBeGreaterThan(0)
   })
 

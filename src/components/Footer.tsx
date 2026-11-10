@@ -6,9 +6,9 @@ export default function Footer() {
       <div className="container footer__inner">
         <div>
           <div className="logo">
-            VASA<span>FITNESS</span>
+            PULSE<span>FITNESS</span>
           </div>
-          <p className="muted">Built to be strong.</p>
+          <p className="muted">Stronger every day.</p>
         </div>
         <ul className="footer__links">
           <li><Link to="/memberships">Memberships</Link></li>
@@ -17,7 +17,7 @@ export default function Footer() {
         </ul>
       </div>
       <p className="container footer__note">
-        Demo application for illustration only. Not affiliated with VASA Fitness.
+        Fictional gym for the ticket-to-PR demo. Clubs, prices, and reviews are made up.
       </p>
     </footer>
   )
