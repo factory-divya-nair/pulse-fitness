@@ -101,6 +101,9 @@ main { flex: 1; }
 .footer__inner { display: flex; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
 .footer__links { display: flex; gap: 1.5rem; color: var(--muted); }
 .footer__links a:hover { color: var(--text); }
+.footer__top { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.footer__top:hover { color: var(--text); }
+.footer__top:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .footer__note { font-size: 0.8rem; color: var(--muted); margin-top: 2rem; }
 
 @media (max-width: 720px) {
