@@ -1,0 +1,328 @@
+name: QA
+
+# Browser QA for every pull request, driven by .factory/skills/qa.
+# Make it a REQUIRED check by adding the "QA" commit status to the branch
+# protection rules for main. This workflow sets that status on the PR head
+# commit, so a maintainer-dispatched run (for fork PRs, which get no secrets)
+# can turn the same required check green. The status fails when the report
+# has a FAIL or BLOCKED row.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to QA'
+        required: true
+      allow_fork:
+        description: 'Allow running on a fork PR. This exposes repository secrets to the PR code; review the PR first.'
+        type: boolean
+        default: false
+
+concurrency:
+  group: qa-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.pr_number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
+
+jobs:
+  qa:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: true
+      STATUS_CONTEXT: QA
+    steps:
+      - name: Resolve pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER_EVENT: ${{ github.event.pull_request.number }}
+          PR_SHA_EVENT: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_EVENT: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER_INPUT: ${{ inputs.pr_number }}
+          ALLOW_FORK: ${{ inputs.allow_fork }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            number="$PR_NUMBER_EVENT"; sha="$PR_SHA_EVENT"; base="$PR_BASE_EVENT"
+          else
+            case "$PR_NUMBER_INPUT" in (''|*[!0-9]*) echo "pr_number must be numeric" >&2; exit 1;; esac
+            number="$PR_NUMBER_INPUT"
+            info="$(gh pr view "$number" -R "$GITHUB_REPOSITORY" --json headRefOid,baseRefName,isCrossRepository)"
+            sha="$(jq -r .headRefOid <<<"$info")"
+            base="$(jq -r .baseRefName <<<"$info")"
+            if [ "$(jq -r .isCrossRepository <<<"$info")" = "true" ] && [ "$ALLOW_FORK" != "true" ]; then
+              echo "::error::PR #$number comes from a fork. Review its code, then re-run with allow_fork checked; the run exposes repository secrets to that code."
+              exit 1
+            fi
+          fi
+          {
+            echo "number=$number"
+            echo "sha=$sha"
+            echo "base=$base"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Mark QA status pending
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.pr.outputs.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$SHA" \
+            -f state=pending -f context="$STATUS_CONTEXT" -f description="Browser QA running" -f target_url="$RUN_URL" > /dev/null
+
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+          fetch-depth: 0
+
+      - name: Check required secrets
+        env:
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+        run: |
+          if [ -z "$FACTORY_API_KEY" ]; then
+            echo "::error::FACTORY_API_KEY is not available. Add it as a repository secret. Fork PRs don't receive secrets: after reviewing the PR, a maintainer can run this workflow manually with the PR number and allow_fork checked; that run sets the required QA status on the PR."
+            exit 1
+          fi
+
+      - name: Read QA config
+        id: cfg
+        run: |
+          set -euo pipefail
+          CFG=.factory/skills/qa/config.yaml
+          echo "video=$(yq '.video_evidence // false' "$CFG")" >> "$GITHUB_OUTPUT"
+          echo "compose=$(yq '.droid_control.compose // false' "$CFG")" >> "$GITHUB_OUTPUT"
+          echo "imagemagick=$(yq '.imagemagick // false' "$CFG")" >> "$GITHUB_OUTPUT"
+
+      - name: Install system packages
+        env:
+          WANT_VIDEO: ${{ steps.cfg.outputs.video }}
+          WANT_COMPOSE: ${{ steps.cfg.outputs.compose }}
+          WANT_IMAGEMAGICK: ${{ steps.cfg.outputs.imagemagick }}
+        run: |
+          set -euo pipefail
+          pkgs=""
+          if [ "$WANT_IMAGEMAGICK" = "true" ]; then pkgs="$pkgs imagemagick"; fi
+          # agent-browser needs ffmpeg to finalize WebM recordings; Compose encodes with it.
+          if [ "$WANT_VIDEO" = "true" ] || [ "$WANT_COMPOSE" = "true" ]; then pkgs="$pkgs ffmpeg"; fi
+          # Build dependencies of the droid-control fframes renderer.
+          if [ "$WANT_VIDEO" = "true" ] && [ "$WANT_COMPOSE" = "true" ]; then pkgs="$pkgs clang libclang-dev libx264-dev"; fi
+          if [ -n "$pkgs" ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq $pkgs
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Install droid CLI
+        run: |
+          set -euo pipefail
+          curl -fsSL https://app.factory.ai/cli | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.factory/bin" >> "$GITHUB_PATH"
+
+      - name: Install droid-control plugin
+        id: plugin
+        env:
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+        run: |
+          set -euo pipefail
+          # A fresh runner has no marketplaces; `droid plugin install` does not
+          # read extraKnownMarketplaces from .factory/settings.json.
+          if ! droid plugin list --scope project | grep -q 'droid-control@factory-plugins'; then
+            droid plugin marketplace add https://github.com/Factory-AI/factory-plugins
+            droid plugin install droid-control@factory-plugins --scope project
+          fi
+          droid plugin list --scope project
+          manifest="$(find "$HOME/.factory/plugins/cache" -path '*droid-control*/fframes/Cargo.toml' -print -quit 2>/dev/null || true)"
+          if [ -n "$manifest" ]; then
+            fframes_dir="$(dirname "$manifest")"
+            echo "fframes_dir=$fframes_dir" >> "$GITHUB_OUTPUT"
+            echo "version=$(basename "$(dirname "$fframes_dir")")" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Restore Compose renderer cache
+        id: fframes-cache
+        if: steps.cfg.outputs.video == 'true' && steps.cfg.outputs.compose == 'true' && steps.plugin.outputs.fframes_dir != ''
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ steps.plugin.outputs.fframes_dir }}/target
+          key: fframes-${{ runner.os }}-${{ steps.plugin.outputs.version }}
+
+      - name: Build Compose renderer
+        id: fframes-build
+        if: steps.cfg.outputs.video == 'true' && steps.cfg.outputs.compose == 'true' && steps.plugin.outputs.fframes_dir != ''
+        continue-on-error: true
+        env:
+          FFRAMES_DIR: ${{ steps.plugin.outputs.fframes_dir }}
+        run: cargo build --release --quiet --manifest-path "$FFRAMES_DIR/Cargo.toml"
+
+      # Saved right after the build (not in the job's post step) so a failing
+      # QA run still keeps the renderer warm for the next run.
+      - name: Save Compose renderer cache
+        if: steps.fframes-build.outcome == 'success' && steps.fframes-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ${{ steps.plugin.outputs.fframes_dir }}/target
+          key: fframes-${{ runner.os }}-${{ steps.plugin.outputs.version }}
+
+      - name: Run QA
+        id: qa
+        continue-on-error: true
+        timeout-minutes: 35
+        env:
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+          QA_EVIDENCE_TOKEN: ${{ secrets.QA_EVIDENCE_TOKEN }}
+          REPO_ID: ${{ github.event.repository.id }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          BASE_REF: ${{ steps.pr.outputs.base }}
+          WANT_VIDEO: ${{ steps.cfg.outputs.video }}
+          WANT_COMPOSE: ${{ steps.cfg.outputs.compose }}
+        run: |
+          set -euo pipefail
+          # Never let a report committed in the PR stand in for this run's result.
+          rm -rf qa-results
+          mkdir -p qa-results
+          PROMPT="$RUNNER_TEMP/qa-prompt.md"
+          {
+            echo "You are running in a non-interactive CI environment. There is NO human available."
+            echo "Do NOT use AskUser, do NOT wait for confirmations, do NOT pause for input."
+            echo "Run the qa skill: read .factory/skills/qa/SKILL.md and follow it exactly."
+            echo "This is pull request #$PR_NUMBER in $GITHUB_REPOSITORY. Diff against origin/$BASE_REF (git diff origin/$BASE_REF...HEAD)."
+            echo "Write the final report to qa-results/report.md"
+            if [ "$WANT_VIDEO" = "true" ]; then
+              echo "Use droid-control Capture and upload video evidence per the qa skill's Evidence Capture rules."
+              if [ -z "$QA_EVIDENCE_TOKEN" ]; then
+                echo "QA_EVIDENCE_TOKEN is not set: skip uploads, keep recordings in qa-results/, and use text evidence in the report."
+              fi
+            fi
+            if [ "$WANT_VIDEO" = "true" ] && [ "$WANT_COMPOSE" = "true" ]; then
+              echo "Run droid-control Compose only for the single most change-specific flow, as the qa skill describes."
+            fi
+          } > "$PROMPT"
+          droid exec --auto high -f "$PROMPT" 2>&1 | tee qa-output.txt
+
+      - name: Upload QA artifacts
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-results-pr-${{ steps.pr.outputs.number }}
+          path: |
+            qa-results/
+            qa-output.txt
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Post QA report as PR comment
+        if: ${{ !cancelled() && steps.pr.outputs.number != '' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          BODY="$RUNNER_TEMP/qa-comment.md"
+          LIMIT=60000
+          {
+            echo "<!-- qa-report -->"
+            if [ -s qa-results/report.md ]; then
+              if ! grep -q '^## QA Report' qa-results/report.md; then echo "## QA Report"; echo; fi
+              if [ "$(wc -c < qa-results/report.md)" -gt "$LIMIT" ]; then
+                head -c "$LIMIT" qa-results/report.md
+                echo
+                echo
+                echo "_Report truncated to fit a GitHub comment. The full report is in the artifact._"
+              else
+                cat qa-results/report.md
+              fi
+            else
+              echo "## QA Report"
+              echo
+              echo ":no_entry: QA did not produce a report."
+              echo
+              echo "<details><summary>QA output</summary>"
+              echo
+              echo '```'
+              tail -c 40000 qa-output.txt 2>/dev/null || echo "No output captured."
+              echo '```'
+              echo
+              echo "</details>"
+            fi
+            echo
+            echo "---"
+            echo "Screenshots, recordings, and logs: download the \`qa-results-pr-$PR_NUMBER\` artifact from the [workflow run]($RUN_URL)."
+          } > "$BODY"
+          ids="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- qa-report -->"))) | .id')"
+          existing="${ids%%$'\n'*}"
+          if [ -n "$existing" ]; then
+            jq -n --rawfile body "$BODY" '{body: $body}' | gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" --input - > /dev/null
+          else
+            jq -n --rawfile body "$BODY" '{body: $body}' | gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --input - > /dev/null
+          fi
+
+      - name: QA gate
+        id: gate
+        if: ${{ !cancelled() }}
+        run: |
+          R=qa-results/report.md
+          if [ ! -s "$R" ]; then
+            echo "::error::QA did not produce $R"
+            exit 1
+          fi
+          # Result rows are table rows whose first cell is a number. The
+          # template's legend line also contains the result codes, so only
+          # table rows are checked.
+          rows="$(grep -E '^[[:space:]]*\|[[:space:]]*[0-9]+[[:space:]]*\|' "$R" || true)"
+          if [ -z "$rows" ]; then
+            echo "::error::QA report has no result rows."
+            exit 1
+          fi
+          if grep -qE '(:x:|:no_entry:|❌|⛔|\bFAIL\b|\bBLOCKED\b)' <<<"$rows"; then
+            echo "::error::QA report contains FAIL or BLOCKED results. See the QA Report comment on the PR."
+            exit 1
+          fi
+          echo "QA passed (PASS, FLAKY, or INCONCLUSIVE only)."
+
+      - name: Publish QA status
+        if: ${{ !cancelled() && steps.pr.outputs.sha != '' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.pr.outputs.sha }}
+          GATE: ${{ steps.gate.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$GATE" = "success" ]; then
+            state=success; desc="Browser QA passed"
+          else
+            state=failure; desc="Browser QA failed or could not run"
+          fi
+          gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$SHA" \
+            -f state="$state" -f context="$STATUS_CONTEXT" -f description="$desc" -f target_url="$RUN_URL" > /dev/null
