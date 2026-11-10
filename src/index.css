@@ -99,7 +99,7 @@ main { flex: 1; }
 
 .footer { border-top: 1px solid var(--border); padding: 3rem 0 1.5rem; background: var(--surface); }
 .footer__inner { display: flex; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
-.footer__links { display: flex; gap: 1.5rem; color: var(--muted); }
+.footer__links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; color: var(--muted); }
 .footer__links a:hover { color: var(--text); }
 .footer__top { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
 .footer__top:hover { color: var(--text); }
