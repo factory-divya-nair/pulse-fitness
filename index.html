@@ -8,7 +8,10 @@
     <script>
       // Set the theme before first paint so light-mode visitors don't see a dark flash. Mirrors src/theme.ts.
       try {
-        var stored = localStorage.getItem('pulse-theme')
+        var stored = null
+        try {
+          stored = localStorage.getItem('pulse-theme')
+        } catch (e) {}
         var light = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
         document.documentElement.dataset.theme = stored === 'light' || stored === 'dark' ? stored : light ? 'light' : 'dark'
       } catch (e) {}
